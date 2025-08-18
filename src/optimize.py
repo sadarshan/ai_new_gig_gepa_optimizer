@@ -44,13 +44,13 @@ def optimize_sourcing_prompt(
     # Run GEPA optimization
     result = gepa.optimize(
         adapter=adapter,
-        train_data=train_data,
-        val_data=eval_data,
-        initial_candidate=initial_candidate,
-        components_to_update=["system_prompt"],
-        num_iterations=num_iterations,
-        batch_size=batch_size,
-        output_dir=output_dir
+        trainset=train_data,
+        valset=eval_data,
+        seed_candidate=initial_candidate,
+        components_to_update=["system_prompt"],#dont know exactly
+        max_metric_calls=num_iterations, #dont know exactly
+        batch_size=batch_size,#dont know exactly
+        run_dir=output_dir
     )
     
     return result
