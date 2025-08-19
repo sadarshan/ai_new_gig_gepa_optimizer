@@ -17,9 +17,10 @@ class OptimizationConfig:
     # Portkey configuration
     portkey_api_key: Optional[str] = None
     portkey_virtual_key: Optional[str] = None
-    portkey_config_id: Optional[str] = None
-    portkey_provider: str = "openai"
-    portkey_model: str = "gpt-4"
+    portkey_config_id_light_model: Optional[str] = None
+    portkey_config_id_heavy_model: Optional[str] = None
+    # portkey_provider: str = "openai"
+    # portkey_model: str = "gpt-4"
     
     # GEPA optimization parameters
     num_iterations: int = 10
@@ -40,8 +41,11 @@ class OptimizationConfig:
         if self.portkey_virtual_key is None:
             self.portkey_virtual_key = os.getenv("PORTKEY_VIRTUAL_KEY")
             
-        if self.portkey_config_id is None:
-            self.portkey_config_id = os.getenv("PORTKEY_CONFIG_ID")
+        if self.portkey_config_id_light_model is None:
+            self.portkey_config_id_light_model = os.getenv("PORTKEY_CONFIG_ID_LIGHT_MODEL")
+        
+        if self.portkey_config_id_heavy_model is None:
+            self.portkey_config_id_heavy_model = os.getenv("PORTKEY_CONFIG_ID_HEAVY_MODEL")
 
 
 # Default initial prompt

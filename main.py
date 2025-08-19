@@ -24,37 +24,25 @@ def main():
         print("Error: Please set PORTKEY_API_KEY in .env file or environment variable")
         return
     
-    # Configure Portkey client based on available configuration
-    portkey_config = {
-        "api_key": config.portkey_api_key,
-    }
     
-    if config.portkey_virtual_key:
-        portkey_config["virtual_key"] = config.portkey_virtual_key
-    
-    if config.portkey_config_id:
-        portkey_config["config"] = config.portkey_config_id
-    else:
-        # If no config ID, set provider and model directly
-        portkey_config["provider"] = config.portkey_provider
-        portkey_config["override_params"] = {"model": config.portkey_model}
-    
-    client = Portkey(**portkey_config)
+    light_client = Portkey(api_key=config.portkey_api_key, config=config.portkey_config_id_light_model)
+    heavy_client = Portkey(api_key=config.portkey_api_key, config=config.portkey_config_id_heavy_model)
     
     print("Starting GEPA optimization for sourcing concierge prompt...")
     print(f"Data directory: {config.data_dir}")
     print(f"Output directory: {config.output_dir}")
     print(f"Iterations: {config.num_iterations}")
     print(f"Batch size: {config.batch_size}")
-    print(f"Provider: {config.portkey_provider}")
-    print(f"Model: {config.portkey_model}")
+    # print(f"Provider: {config.portkey_provider}")
+    # print(f"Model: {config.portkey_model}")
     print()
     
     # Run optimization
     try:
         result = optimize_sourcing_prompt(
             data_dir=config.data_dir,
-            model_client=client,
+            light_client=light_client,
+            heavy_client=heavy_client,
             initial_prompt=DEFAULT_INITIAL_PROMPT,
             num_iterations=config.num_iterations,
             batch_size=config.batch_size,

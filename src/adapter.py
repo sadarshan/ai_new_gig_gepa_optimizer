@@ -24,14 +24,16 @@ class ToolCallOutput:
 
 
 class SourcingConciergeGEPAAdapter(GEPAAdapter):
-    def __init__(self, model_client, data_loader: SourcingDatasetLoader):
-        self.model_client = model_client
+    def __init__(self, light_client, heavy_client, data_loader: SourcingDatasetLoader):
+        self.light_client = light_client
+        self.heavy_client = heavy_client
         self.data_loader = data_loader
         self.tool_definitions = data_loader.get_tool_definitions()
     
     def evaluate(self, 
                 data_batch: List[ChatDataInstance], 
-                candidate: Dict[str, str]) -> EvaluationBatch:
+                candidate: Dict[str, str], 
+                capture_traces: bool = False) -> EvaluationBatch:
         
         trajectories = []
         outputs = []
@@ -79,7 +81,7 @@ class SourcingConciergeGEPAAdapter(GEPAAdapter):
         
         # Call the model with tool definitions using Portkey
         try:
-            response = self.model_client.chat.completions.create(
+            response = self.light_client.chat.completions.create(
                 messages=messages,
                 tools=self.tool_definitions,
                 tool_choice="required"
@@ -146,32 +148,52 @@ class SourcingConciergeGEPAAdapter(GEPAAdapter):
     def make_reflective_dataset(self, 
                                candidate: Dict[str, str],
                                evaluation_batch: EvaluationBatch, 
-                               components_to_update: List[str]) -> Dict[str, Any]:
+                               components_to_update: List[str]) -> Dict[str, List[Dict[str, Any]]]:
         
-        reflective_data = []
+        ret_d: Dict[str, List[Dict[str, Any]]] = {}
         
-        for trajectory, output, score in zip(
-            evaluation_batch.trajectories, 
-            evaluation_batch.outputs, 
-            evaluation_batch.scores
-        ):
-            if score < 1.0:  # Only include failed or partially failed examples
-                reflective_data.append({
-                    "conversation_history": trajectory.conversation_history,
-                    "predicted_tool_call": trajectory.predicted_tool_call,
-                    "expected_tool_call": trajectory.expected_tool_call,
-                    "score": score,
-                    "error_analysis": self._analyze_error(trajectory, output)
-                })
+        assert len(components_to_update) == 1, f"Expected 1 component to update, got {len(components_to_update)}"
+        comp = components_to_update[0]
         
-        return {
-            "system_prompt": {
-                "failed_examples": reflective_data,
-                "total_examples": len(evaluation_batch.trajectories),
-                "average_score": sum(evaluation_batch.scores) / len(evaluation_batch.scores),
-                "tool_definitions": self.tool_definitions
+        items: List[Dict[str, Any]] = []
+        trace_instances = list(zip(evaluation_batch.trajectories, evaluation_batch.scores, evaluation_batch.outputs, strict=False))
+        
+        for trajectory, score, output in trace_instances:
+            # Format conversation history as input
+            conversation_lines = []
+            for msg in trajectory.conversation_history:
+                conversation_lines.append(f"{msg['role'].title()}: {msg['content']}")
+            input_text = "\n".join(conversation_lines)
+            
+            # Format the generated tool call as output
+            if trajectory.predicted_tool_call:
+                generated_output = f"Tool call: {trajectory.predicted_tool_call['name']}({trajectory.predicted_tool_call.get('arguments', {})})"
+            else:
+                generated_output = "No tool call made"
+            
+            # Create feedback based on performance
+            if score >= 1.0:
+                feedback = f"The tool call is correct. Successfully called {trajectory.expected_tool_call['name']} with proper arguments."
+            else:
+                expected_call = f"{trajectory.expected_tool_call['name']}({trajectory.expected_tool_call.get('arguments', {})})"
+                error_analysis = self._analyze_error(trajectory, output)
+                feedback = f"The tool call is incorrect. Expected: {expected_call}. Error: {error_analysis}"
+            
+            # Create the sample in GEPA's expected format
+            d = {
+                "Inputs": input_text,
+                "Generated Outputs": generated_output,
+                "Feedback": feedback,
             }
-        }
+            
+            items.append(d)
+        
+        ret_d[comp] = items
+        
+        if len(items) == 0:
+            raise Exception("No valid predictions found for any module.")
+        print(ret_d)
+        return ret_d
     
     def _analyze_error(self, 
                       trajectory: ToolCallTrajectory, 
