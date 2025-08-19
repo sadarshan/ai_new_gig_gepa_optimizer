@@ -459,7 +459,7 @@ class InteractiveDataGenerator:
 
 def main():
     """Run the interactive data generator."""
-    data_dir = "/Users/darshan/Documents/claude_code_projects/GEPA_implementation_for_aorora_supplies/data"
+    data_dir = os.getenv('DATA_DIR')
     generator = InteractiveDataGenerator(data_dir)
     generator.run_interactive_session()
 

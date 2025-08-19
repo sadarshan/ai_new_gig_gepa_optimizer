@@ -10,7 +10,7 @@ load_dotenv()
 @dataclass
 class OptimizationConfig:
     # Data configuration
-    data_dir: str = "/Users/darshan/Documents/claude_code_projects/GEPA_implementation_for_aorora_supplies/data"
+    data_dir: str = os.getenv('DATA_DIR')
     train_split: str = "train"
     eval_split: str = "eval"
     

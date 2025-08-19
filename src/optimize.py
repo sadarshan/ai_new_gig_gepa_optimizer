@@ -81,7 +81,7 @@ Available tools:
 Always be helpful, professional, and thorough in gathering requirements before submitting requests."""
 
     data_dir = "data"
-    output_dir = "/Users/darshan/Documents/claude_code_projects/GEPA_implementation_for_aorora_supplies/output_optimization_results"
+    output_dir = os.getenv('OUTPUT_DIR')
     
     # Uncomment and configure when you have your model client ready
     # result = optimize_sourcing_prompt(
