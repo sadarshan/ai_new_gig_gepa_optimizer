@@ -11,7 +11,7 @@ def optimize_sourcing_prompt(
     model_client: Any,
     initial_prompt: str,
     num_iterations: int = 10,
-    batch_size: int = 16,
+    batch_size: int = 3,
     output_dir: str = "results"
 ):
     """
@@ -47,9 +47,9 @@ def optimize_sourcing_prompt(
         trainset=train_data,
         valset=eval_data,
         seed_candidate=initial_candidate,
-        components_to_update=["system_prompt"],#dont know exactly
-        max_metric_calls=num_iterations, #dont know exactly
-        batch_size=batch_size,#dont know exactly
+        # components_to_update=["system_prompt"] # dont know exactly
+        num_iters=num_iterations,
+        # reflection_minibatch_size=batch_size
         run_dir=output_dir
     )
     
@@ -81,7 +81,7 @@ Available tools:
 Always be helpful, professional, and thorough in gathering requirements before submitting requests."""
 
     data_dir = "data"
-    output_dir = "optimization_results"
+    output_dir = "/Users/darshan/Documents/claude_code_projects/GEPA_implementation_for_aorora_supplies/output_optimization_results"
     
     # Uncomment and configure when you have your model client ready
     # result = optimize_sourcing_prompt(

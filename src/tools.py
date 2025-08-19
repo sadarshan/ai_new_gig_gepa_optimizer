@@ -7,74 +7,101 @@ def get_available_tools() -> List[Dict[str, Any]]:
     """
     return [
         {
-            "name": "submit_request",
-            "description": "Submit a sourcing request for a product or service to suppliers",
-            "parameters": {
+            "type": "function",
+            "function": {
+                "name": "submit_request",
+                "parameters": {
                 "type": "object",
+                "required": [
+                    "product_or_service",
+                    "quantity_or_scope",
+                    "delivery_terms",
+                    "origin",
+                    "delivery_location",
+                    "b2b_or_b2c"
+                ],
                 "properties": {
-                    "product_description": {
-                        "type": "string", 
-                        "description": "Detailed description of the product/service needed"
+                    "origin": {
+                    "type": "string",
+                    "description": "The origin of the product or service - country/region. you can also fill this using the delivery location's country or region"
                     },
-                    "quantity": {
-                        "type": "integer", 
-                        "description": "Quantity required"
+                    "documents": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     },
-                    "budget": {
-                        "type": "number", 
-                        "description": "Budget range or maximum budget"
+                    "description": "The documents of the product or service that the buyer wants to source. If documents not found then leave it empty array"
                     },
-                    "timeline": {
-                        "type": "string", 
-                        "description": "When the product/service is needed"
+                    "b2b_or_b2c": {
+                    "type": "string",
+                    "description": "Based on the specifications(volume, distance between places for services, quantity, delivery timeframe) of the product or service, the type of the product or service can be b2b or b2c"
+                    },
+                    "delivery_terms": {
+                    "type": "string",
+                    "description": "The delivery terms of the product or service"
                     },
                     "specifications": {
-                        "type": "object", 
-                        "description": "Additional specifications or requirements"
+                    "type": "object",
+                    "description": "The specifications of the product or service in key value pairs"
+                    },
+                    "delivery_location": {
+                    "type": "string",
+                    "description": "The delivery location of the product or service - country/region [mandatory]"
+                    },
+                    "quantity_or_scope": {
+                    "type": "string",
+                    "description": "The quantity of the product or scope of the service"
+                    },
+                    "product_or_service": {
+                    "type": "string",
+                    "description": "The product or service buyer is sourcing"
                     }
+                }
                 },
-                "required": ["product_description", "quantity"]
+                "description": "After collecting the information from the buyer, submit the request to proceed with the sourcing process. This returns a request ID that can be shared with the buyer"
             }
         },
         {
-            "name": "cancel_request",
-            "description": "Cancel an existing sourcing request",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "request_id": {
-                        "type": "string", 
-                        "description": "ID of the request to cancel"
-                    },
-                    "reason": {
-                        "type": "string", 
-                        "description": "Reason for cancellation"
+            "type": "function",
+            "function": {
+                "name": "cancel_request",
+                "parameters": {
+                    "type": "object",
+                    "required": [
+                        "request_id",
+                        "content"
+                    ],
+                    "properties": {
+                        "content": {
+                            "type": "string",
+                            "description": "The content that you want to send to the buyer. Remember the buyer is the one who puts request. So content should not contain 'The buyer has requested...'"
+                        },
+                        "request_id": {
+                            "type": "string",
+                            "description": "The request ID that the buyer wants to cancel"
+                        }
                     }
                 },
-                "required": ["request_id"]
+                "description": "Use this when you want to cancel the request"
             }
         },
         {
-            "name": "reply_to_buyer",
-            "description": "Send a message back to the buyer with information, questions, or updates",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "message": {
-                        "type": "string", 
-                        "description": "Message to send to the buyer"
-                    },
-                    "message_type": {
-                        "type": "string", 
-                        "enum": ["question", "information", "update", "clarification"], 
-                        "description": "Type of message being sent"
-                    },
-                    "requires_response": {
-                        "type": "boolean", 
-                        "description": "Whether this message requires a response from the buyer"
+            "type": "function",
+            "function": {
+                "name": "reply_to_buyer",
+                "parameters": {
+                    "type": "object",
+                    "required": [
+                        "text"
+                    ],
+                    "properties": {
+                        "text": {
+                            "type": "string",
+                            "description": "The text that you want to send to the buyer"
+                        }
                     }
                 },
-                "required": ["message", "message_type"]
+                "description": "When you want to reply back to the buyer"
             }
         }
     ]
@@ -84,4 +111,4 @@ def get_tool_names() -> List[str]:
     """
     Returns just the names of available tools.
     """
-    return [tool["name"] for tool in get_available_tools()]
+    return [tool["function"]["name"] for tool in get_available_tools()]

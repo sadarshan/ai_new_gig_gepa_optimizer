@@ -5,6 +5,8 @@ name = "pypi"
 
 [packages]
 gepa = "*"
+portkey-ai = "*"
+python-dotenv = "*"
 
 [dev-packages]
 

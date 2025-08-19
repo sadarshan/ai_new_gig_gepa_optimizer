@@ -10,7 +10,7 @@ load_dotenv()
 @dataclass
 class OptimizationConfig:
     # Data configuration
-    data_dir: str = "data"
+    data_dir: str = "/Users/darshan/Documents/claude_code_projects/GEPA_implementation_for_aorora_supplies/data"
     train_split: str = "train"
     eval_split: str = "eval"
     
@@ -27,7 +27,7 @@ class OptimizationConfig:
     components_to_update: list = None
     
     # Output configuration
-    output_dir: str = "optimization_results"
+    output_dir: str = os.getenv('OUTPUT_DIR')
     save_intermediate: bool = True
     
     def __post_init__(self):
